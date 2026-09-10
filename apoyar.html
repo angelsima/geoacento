@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<link rel="icon" href="favicon.ico" sizes="any">
+<link rel="icon" href="logo-icono.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="manifest" href="site.webmanifest">
+<meta name="theme-color" content="#1B2A3D">
+<title>GeoAcento — Apoya el proyecto</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=Space+Mono:wght@700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#1B2A3D; --paper:#FAF7F2; --brass:#B08D57; --red:#C1443C; --teal:#3F7D6B;
+    --border-subtle: rgba(27,42,61,0.12); --shadow: 0 4px 20px rgba(27,42,61,0.08);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--paper); color:var(--ink); font-family:'Inter', sans-serif;
+    min-height:100vh; display:flex; align-items:center; justify-content:center; padding:24px;
+  }
+  .wrap{ width:100%; max-width:420px; text-align:center; }
+  .brand-icon{ width:52px; height:52px; margin:0 auto 14px; display:block; }
+  .brand-icon-link{ display:block; width:fit-content; margin:0 auto; }
+  .eyebrow{
+    font-size:11px; letter-spacing:0.14em; text-transform:uppercase; color:var(--brass); font-weight:700;
+  }
+  h1{ font-family:'Fraunces', serif; font-size:30px; margin:6px 0 10px; }
+  p{ font-size:14.5px; color:#4b5a6b; line-height:1.6; }
+  .card{
+    background:#fff; border:1px solid var(--border-subtle); border-radius:16px; box-shadow:var(--shadow);
+    padding:26px 22px; margin-top:24px;
+  }
+  .card .label{ font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--brass); font-weight:700; margin-bottom:8px; }
+  .phone{
+    font-family:'Space Mono', monospace; font-size:26px; font-weight:700; color:var(--ink);
+    letter-spacing:.04em; margin:4px 0 18px;
+  }
+  .copy-btn{
+    display:inline-flex; align-items:center; gap:8px; background:var(--ink); color:var(--paper);
+    border:none; border-radius:20px; padding:11px 22px; font-size:14px; font-weight:600; cursor:pointer;
+    font-family:'Inter', sans-serif;
+  }
+  .copy-btn:hover{ background:var(--red); }
+  .copy-btn.copied{ background:var(--teal); }
+  .steps{ text-align:left; margin-top:22px; font-size:13.5px; color:#4b5a6b; line-height:1.9; }
+  .steps b{ color:var(--ink); }
+  .back-link{
+    display:inline-block; margin-top:26px; font-size:12px; color:var(--ink); text-decoration:underline;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a href="index.html" aria-label="Ir al inicio de GeoAcento" class="brand-icon-link"><svg class="brand-icon" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <path d="M100,175 C64,120.75 45,107.0 45,85 A55,55 0 1 1 155,85 C155,107.0 136,120.75 100,175 Z" fill="#1B2A3D"/>
+    <rect x="72.5" y="73" width="7" height="24" rx="3.5" fill="#FAF7F2"/>
+    <rect x="84.5" y="65" width="7" height="40" rx="3.5" fill="#FAF7F2"/>
+    <rect x="96.5" y="56" width="7" height="58" rx="3.5" fill="#FAF7F2"/>
+    <rect x="108.5" y="65" width="7" height="40" rx="3.5" fill="#FAF7F2"/>
+    <rect x="120.5" y="73" width="7" height="24" rx="3.5" fill="#FAF7F2"/>
+  </svg></a>
+  <span class="eyebrow">Gracias por pensarlo</span>
+  <h1>Apoya GeoAcento</h1>
+  <p>Este proyecto lo mantenemos con las voces de quien juega y graba — y, si quieres, con una pequeña ayuda para los gastos de alojamiento y almacenamiento. Es totalmente voluntario, nunca hace falta para jugar ni para grabar.</p>
+
+  <div class="card">
+    <div class="label">Bizum</div>
+    <div class="phone" id="phone-number">629 25 23 10</div>
+    <button class="copy-btn" id="copy-btn">📋 Copiar número</button>
+
+    <div class="steps">
+      1. Abre la app de tu banco.<br>
+      2. Busca <b>Bizum</b> → "Enviar dinero".<br>
+      3. Pega o escribe este número.<br>
+      4. Pon la cantidad que quieras — cualquier cosa ayuda 💛
+    </div>
+  </div>
+
+  <a href="geoacento.html" class="back-link">← Volver al juego</a>
+</div>
+
+<script>
+  document.getElementById("copy-btn").addEventListener("click", async () => {
+    const btn = document.getElementById("copy-btn");
+    const numero = document.getElementById("phone-number").textContent.replace(/\s+/g, "");
+    try{
+      await navigator.clipboard.writeText(numero);
+      btn.textContent = "✓ Copiado";
+      btn.classList.add("copied");
+      setTimeout(() => { btn.textContent = "📋 Copiar número"; btn.classList.remove("copied"); }, 2000);
+    } catch(err){
+      btn.textContent = "No se pudo copiar — cópialo a mano";
+    }
+  });
+</script>
+</body>
+</html>
