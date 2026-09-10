@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>GeoAcento — Graba tu acento</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Space+Mono:wght@400;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#1B2A3D; --paper:#EDE3D0; --paper-dark:#E0D3B8; --brass:#B08D57; --brass-light:#D4B483;
+    --red:#C1443C; --teal:#3F7D6B; --shadow:0 8px 24px rgba(27,42,61,0.25); --radius:4px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      radial-gradient(circle at 20% 10%, rgba(176,141,87,0.12), transparent 45%),
+      radial-gradient(circle at 85% 80%, rgba(63,125,107,0.10), transparent 40%),
+      var(--paper);
+    color:var(--ink); font-family:'Inter', sans-serif; min-height:100vh;
+    display:flex; align-items:center; justify-content:center; padding:20px;
+  }
+  .app{ width:100%; max-width:520px; }
+  h1,h2{ font-family:'Fraunces', serif; margin:0; letter-spacing:-0.01em; }
+  .eyebrow{
+    font-family:'Space Mono', monospace; font-size:11px; letter-spacing:.18em;
+    text-transform:uppercase; color:var(--brass); font-weight:700;
+  }
+  .hero{ text-align:center; margin-bottom:26px; }
+  .hero h1{ font-size:32px; margin-top:8px; }
+  .hero p{ font-size:14px; color:#4b5a6b; line-height:1.5; max-width:420px; margin:8px auto 0; }
+  .play-cta{
+    display:inline-block; margin-top:14px; background:var(--ink); color:var(--paper); text-decoration:none;
+    font-weight:600; font-size:13px; padding:9px 18px; border-radius:20px; border:2px solid var(--ink);
+    transition:transform .15s ease;
+  }
+  .play-cta:hover{ transform:translateY(-2px); background:var(--red); border-color:var(--red); }
+
+  .card{ background:#fff; border:2px solid var(--ink); border-radius:var(--radius); box-shadow:var(--shadow); padding:22px; }
+
+  label{ display:block; font-family:'Space Mono', monospace; font-size:11px; letter-spacing:.06em; text-transform:uppercase; color:var(--brass); margin-bottom:6px; }
+  select{
+    width:100%; padding:10px 12px; margin-bottom:18px; border:1.5px solid var(--ink); border-radius:var(--radius);
+    font-family:'Inter', sans-serif; font-size:15px; background:#fff; color:var(--ink);
+  }
+  select:disabled{ opacity:.5; }
+
+  .record-zone{ text-align:center; margin:22px 0; }
+  .record-btn{
+    width:88px; height:88px; border-radius:50%; border:3px solid var(--ink); background:var(--red); color:#fff;
+    font-size:28px; cursor:pointer; display:flex; align-items:center; justify-content:center; margin:0 auto;
+    transition:transform .15s ease;
+  }
+  .record-btn:hover{ transform:scale(1.05); }
+  .record-btn:disabled{ opacity:.4; cursor:not-allowed; transform:none; }
+  .record-btn.recording{ animation:pulse 1s infinite; }
+  @keyframes pulse{ 0%,100%{box-shadow:0 0 0 0 rgba(193,68,60,0.5);} 50%{box-shadow:0 0 0 14px rgba(193,68,60,0);} }
+  .record-hint{ font-family:'Space Mono', monospace; font-size:12px; color:#5b6675; margin-top:12px; }
+  .countdown{ font-family:'Space Mono', monospace; font-size:22px; color:var(--red); margin-top:10px; min-height:28px; }
+
+  .preview{ margin-top:16px; display:none; text-align:center; }
+  .preview audio{ width:100%; margin-bottom:10px; }
+  .redo-btn{
+    background:none; border:1px solid var(--ink); color:var(--ink); border-radius:20px; padding:6px 14px;
+    font-family:'Space Mono', monospace; font-size:11px; cursor:pointer;
+  }
+  .redo-btn:hover{ background:var(--ink); color:var(--paper); }
+
+  .consent{ display:flex; align-items:flex-start; gap:8px; margin:20px 0; font-size:12px; color:#4b5a6b; line-height:1.5; }
+  .consent input{ margin-top:3px; flex:none; }
+
+  .submit-btn{
+    width:100%; background:var(--ink); color:var(--paper); border:none; border-radius:24px; padding:14px;
+    font-family:'Inter', sans-serif; font-size:15px; font-weight:600; cursor:pointer;
+  }
+  .submit-btn:disabled{ opacity:.4; cursor:not-allowed; }
+  .submit-btn:not(:disabled):hover{ background:var(--red); }
+
+  .status-msg{ margin-top:14px; font-size:13px; text-align:center; min-height:18px; }
+  .status-msg.ok{ color:var(--teal); font-weight:600; }
+  .status-msg.err{ color:var(--red); font-weight:600; }
+
+  .footnote{ margin-top:20px; font-size:11px; color:#8b95a1; text-align:center; line-height:1.5; }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="hero">
+    <span class="eyebrow">GeoAcento</span>
+    <h1>Graba tu acento</h1>
+    <p>Elige tu comunidad y provincia, graba 5 segundos diciendo la frase de abajo, y ayúdanos a construir el mapa de acentos de España.</p>
+    <a href="geoacento.html" class="play-cta" id="play-cta">▶ Jugar</a>
+  </div>
+
+  <div class="card">
+    <label for="sel-ccaa">Comunidad autónoma</label>
+    <select id="sel-ccaa">
+      <option value="">Selecciona…</option>
+    </select>
+
+    <label for="sel-provincia">Provincia</label>
+    <select id="sel-provincia" disabled>
+      <option value="">Primero elige la comunidad…</option>
+    </select>
+
+    <div class="record-zone">
+      <div class="record-hint" id="record-phrase">"El veloz murciélago hindú comía feliz cardillo y kiwi"</div>
+      <button class="record-btn" id="record-btn" disabled aria-label="Grabar">●</button>
+      <div class="countdown" id="countdown"></div>
+
+      <div class="preview" id="preview">
+        <audio id="preview-audio" controls></audio><br>
+        <button class="redo-btn" id="redo-btn">Grabar de nuevo</button>
+      </div>
+    </div>
+
+    <label class="consent">
+      <input type="checkbox" id="consent-check">
+      <span>Autorizo el uso de este audio, de forma anónima, dentro del juego GeoAcento.</span>
+    </label>
+
+    <button class="submit-btn" id="submit-btn" disabled>Enviar grabación</button>
+    <div class="status-msg" id="status-msg"></div>
+  </div>
+
+  <p class="footnote">No se pide ningún dato personal. Tu grabación se revisa antes de aparecer en el juego.</p>
+</div>
+
+<script>
+  /* =========================================================================
+     GEOACENTO — Formulario de grabación
+     =========================================================================
+     CONFIGURA AQUÍ tu proyecto de Supabase (mismos valores que en
+     geoacento.html — ver supabase_setup.sql para crear la tabla/bucket):
+     ========================================================================= */
+  const SUPABASE_URL_RAW = "https://gapkxsjnmbsogbpueddo.supabase.co"; // <-- solo la URL base, SIN /rest/v1/
+  const SUPABASE_URL = SUPABASE_URL_RAW.replace(/\/rest\/v1\/?$/, "").replace(/\/+$/, ""); // limpia /rest/v1/ o barras finales si se cuelan por error
+  const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_MhPxiCz7tWuLmcDsAmcgoA_emVBvfyL";
+
+  const RECORD_SECONDS = 5;
+
+  // Mismos nombres exactos que los <path name="..."> del mapa SVG del juego.
+  const CCAA_TO_PROVINCIAS = {
+    "Andalucía": ["Almería","Cádiz","Córdoba","Granada","Huelva","Jaén","Málaga","Sevilla"],
+    "Aragon": ["Huesca","Teruel","Zaragoza"],
+    "Asturias": ["Asturias"],
+    "Cantabria": ["Cantabria"],
+    "Castilla la Mancha": ["Albacete","Ciudad Real","Cuenca","Guadalajara","Toledo"],
+    "Castilla y León": ["Ávila","Burgos","León","Palencia","Salamanca","Segovia","Soria","Valladolid","Zamora"],
+    "Cataluña": ["Barcelona","Gerona","Lérida","Tarragona"],
+    "Ceuta": ["Ceuta"],
+    "Comunidad Valenciana": ["Alicante","Castellón","Valencia"],
+    "Comunidad de Madrid": ["Madrid"],
+    "Extremadura": ["Badajoz","Cáceres"],
+    "Galicia": ["La Coruña","Lugo","Orense","Pontevedra"],
+    "Islas Baleares": ["Baleares"],
+    "Islas Canarias": ["Las Palmas","Santa Cruz de Tenerife"],
+    "La Rioja": ["La Rioja"],
+    "Melilla": ["Melilla"],
+    "Murcia": ["Murcia"],
+    "Navarra, Comunidad Foral de": ["Navarra"],
+    "País Vasco": ["Álava","Bizkaia","Gipuzkoa"],
+  };
+
+  const $ = id => document.getElementById(id);
+
+  // --- identificador anónimo por navegador (no es un dato personal identificable) ---
+  function getContributorId(){
+    let id = localStorage.getItem("geoacento_contributor_id");
+    if(!id){
+      id = (crypto.randomUUID ? crypto.randomUUID() : String(Date.now()) + Math.random().toString(16).slice(2));
+      localStorage.setItem("geoacento_contributor_id", id);
+    }
+    return id;
+  }
+
+  function slug(str){
+    return str.toString().normalize("NFD").replace(/[\u0300-\u036f]/g,"")
+      .toLowerCase().replace(/[^a-z0-9]+/g,"").trim();
+  }
+
+  // --- desplegables ---
+  const selCcaa = $("sel-ccaa");
+  const selProvincia = $("sel-provincia");
+  Object.keys(CCAA_TO_PROVINCIAS).sort().forEach(name => {
+    const opt = document.createElement("option");
+    opt.value = name; opt.textContent = name;
+    selCcaa.appendChild(opt);
+  });
+
+  selCcaa.addEventListener("change", () => {
+    const ccaa = selCcaa.value;
+    selProvincia.innerHTML = "";
+    if(!ccaa){
+      selProvincia.disabled = true;
+      selProvincia.innerHTML = '<option value="">Primero elige la comunidad…</option>';
+      updateSubmitState();
+      return;
+    }
+    const provincias = CCAA_TO_PROVINCIAS[ccaa];
+    if(provincias.length === 1){
+      selProvincia.innerHTML = `<option value="${provincias[0]}">${provincias[0]}</option>`;
+      selProvincia.disabled = true; // solo hay una opción posible (ej. Asturias, Ceuta, Melilla)
+    } else {
+      selProvincia.innerHTML = '<option value="">Selecciona…</option>' +
+        provincias.slice().sort().map(p => `<option value="${p}">${p}</option>`).join("");
+      selProvincia.disabled = false;
+    }
+    updateSubmitState();
+  });
+  selProvincia.addEventListener("change", updateSubmitState);
+
+  // --- grabación ---
+  let mediaRecorder = null;
+  let chunks = [];
+  let recordedBlob = null;
+  let mimeType = "audio/webm";
+  let countdownTimer = null;
+
+  const recordBtn = $("record-btn");
+  const countdownEl = $("countdown");
+  const previewBox = $("preview");
+  const previewAudio = $("preview-audio");
+
+  async function initMic(){
+    try{
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: {
+          echoCancellation: false,
+          noiseSuppression: false,
+          autoGainControl: false,
+          channelCount: 1,
+          sampleRate: 44100,
+        },
+      });
+      const candidates = ["audio/webm", "audio/ogg", "audio/mp4"];
+      mimeType = candidates.find(t => MediaRecorder.isTypeSupported && MediaRecorder.isTypeSupported(t)) || "";
+      const recorderOpts = { audioBitsPerSecond: 128000 };
+      if(mimeType) recorderOpts.mimeType = mimeType;
+      mediaRecorder = new MediaRecorder(stream, recorderOpts);
+      mediaRecorder.ondataavailable = e => { if(e.data.size > 0) chunks.push(e.data); };
+      mediaRecorder.onstop = () => {
+        recordedBlob = new Blob(chunks, { type: mediaRecorder.mimeType || mimeType || "audio/webm" });
+        previewAudio.src = URL.createObjectURL(recordedBlob);
+        previewBox.style.display = "block";
+        updateSubmitState();
+      };
+      recordBtn.disabled = false;
+    } catch(err){
+      $("status-msg").textContent = "No se pudo acceder al micrófono. Revisa los permisos del navegador.";
+      $("status-msg").className = "status-msg err";
+    }
+  }
+  initMic();
+
+  recordBtn.addEventListener("click", () => {
+    if(!mediaRecorder || mediaRecorder.state === "recording") return;
+    chunks = [];
+    recordedBlob = null;
+    previewBox.style.display = "none";
+    mediaRecorder.start();
+    recordBtn.classList.add("recording");
+    recordBtn.disabled = true;
+
+    let remaining = RECORD_SECONDS;
+    countdownEl.textContent = `Grabando… ${remaining}s`;
+    countdownTimer = setInterval(() => {
+      remaining--;
+      countdownEl.textContent = remaining > 0 ? `Grabando… ${remaining}s` : "";
+      if(remaining <= 0){
+        clearInterval(countdownTimer);
+        mediaRecorder.stop();
+        recordBtn.classList.remove("recording");
+        recordBtn.disabled = false;
+      }
+    }, 1000);
+  });
+
+  $("redo-btn").addEventListener("click", () => {
+    recordedBlob = null;
+    previewBox.style.display = "none";
+    updateSubmitState();
+  });
+
+  $("consent-check").addEventListener("change", updateSubmitState);
+
+  function updateSubmitState(){
+    const ready = selCcaa.value && selProvincia.value && recordedBlob && $("consent-check").checked;
+    $("submit-btn").disabled = !ready;
+  }
+
+  // --- envío ---
+  $("submit-btn").addEventListener("click", async () => {
+    const ccaa = selCcaa.value;
+    const provincia = selProvincia.value;
+    const statusEl = $("status-msg");
+    $("submit-btn").disabled = true;
+    statusEl.className = "status-msg";
+    statusEl.textContent = "Enviando…";
+
+    try{
+      // 1) contar clips ya existentes de esta ccaa+provincia para numerar el archivo
+      const countUrl = `${SUPABASE_URL}/rest/v1/clips?select=id&ccaa=eq.${encodeURIComponent(ccaa)}&provincia=eq.${encodeURIComponent(provincia)}`;
+      const countRes = await fetch(countUrl, {
+        headers: {
+          apikey: SUPABASE_PUBLISHABLE_KEY,
+          Authorization: `Bearer ${SUPABASE_PUBLISHABLE_KEY}`,
+          Prefer: "count=exact",
+        },
+      });
+      if(!countRes.ok) throw new Error(`Recuento (HTTP ${countRes.status}): ${await countRes.text()}`);
+      const existing = await countRes.json();
+      const n = (Array.isArray(existing) ? existing.length : 0) + 1;
+
+      const ext = (mediaRecorder.mimeType || mimeType || "audio/webm").includes("ogg") ? "ogg"
+                : (mediaRecorder.mimeType || mimeType || "").includes("mp4") ? "m4a" : "webm";
+      const filename = `${slug(ccaa)}_${slug(provincia)}_${n}.${ext}`;
+
+      // 2) subir el audio al bucket "audios"
+      const uploadRes = await fetch(`${SUPABASE_URL}/storage/v1/object/audios/${filename}`, {
+        method: "POST",
+        headers: {
+          apikey: SUPABASE_PUBLISHABLE_KEY,
+          Authorization: `Bearer ${SUPABASE_PUBLISHABLE_KEY}`,
+          "Content-Type": recordedBlob.type || "audio/webm",
+        },
+        body: recordedBlob,
+      });
+      if(!uploadRes.ok) throw new Error(`Subida de audio (HTTP ${uploadRes.status}): ${await uploadRes.text()}`);
+
+      const audioUrl = `${SUPABASE_URL}/storage/v1/object/public/audios/${filename}`;
+
+      // 3) insertar la fila en la tabla "clips"
+      const insertRes = await fetch(`${SUPABASE_URL}/rest/v1/clips`, {
+        method: "POST",
+        headers: {
+          apikey: SUPABASE_PUBLISHABLE_KEY,
+          Authorization: `Bearer ${SUPABASE_PUBLISHABLE_KEY}`,
+          "Content-Type": "application/json",
+          Prefer: "return=minimal",
+        },
+        body: JSON.stringify({
+          ccaa, provincia,
+          contributor_id: getContributorId(),
+          filename, audio_url: audioUrl,
+          status: "pending",
+        }),
+      });
+      if(!insertRes.ok) throw new Error(`Guardar registro (HTTP ${insertRes.status}): ${await insertRes.text()}`);
+
+      statusEl.textContent = "¡Gracias! Tu grabación se ha enviado y está pendiente de revisión.";
+      statusEl.className = "status-msg ok";
+
+      // reset para permitir otra grabación
+      recordedBlob = null;
+      previewBox.style.display = "none";
+      $("consent-check").checked = false;
+    } catch(err){
+      console.error(err);
+      statusEl.textContent = "Error: " + (err && err.message ? err.message : "fallo desconocido al enviar.");
+      statusEl.className = "status-msg err";
+    } finally {
+      updateSubmitState();
+    }
+  });
+</script>
+</body>
+</html>
